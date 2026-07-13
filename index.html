@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Painel SLA 48h — Projetos Corporativos | Proxxima Telecom</title>
+<style>
+  :root{
+    --bg:#0d1117; --card:#161b22; --card2:#1c2330; --border:#2a3444;
+    --txt:#e6edf3; --muted:#8b98a9;
+    --green:#2ea56f; --yellow:#d9a62e; --red:#e05252; --blue:#3b82f6;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;font-family:'Segoe UI',system-ui,sans-serif}
+  body{background:var(--bg);color:var(--txt);min-height:100vh;padding:24px}
+  .header{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;margin-bottom:20px}
+  .header h1{font-size:1.35rem;font-weight:600}
+  .header h1 span{color:var(--blue)}
+  .header .sub{color:var(--muted);font-size:.85rem;margin-top:4px}
+  .badge-demo{background:#5b3a10;color:#f0b45c;border:1px solid #8a5a1a;padding:4px 10px;border-radius:20px;font-size:.75rem}
+  .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:20px}
+  .kpi{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:16px 18px}
+  .kpi .label{color:var(--muted);font-size:.78rem;text-transform:uppercase;letter-spacing:.5px}
+  .kpi .value{font-size:2rem;font-weight:700;margin-top:6px}
+  .kpi .hint{font-size:.75rem;color:var(--muted);margin-top:4px}
+  .kpi.green .value{color:var(--green)} .kpi.yellow .value{color:var(--yellow)}
+  .kpi.red .value{color:var(--red)} .kpi.blue .value{color:var(--blue)}
+  .filters{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+  select,button.reload{background:var(--card);color:var(--txt);border:1px solid var(--border);border-radius:8px;padding:8px 12px;font-size:.85rem;cursor:pointer}
+  .section-title{font-size:.95rem;font-weight:600;color:var(--muted);margin:22px 0 10px;text-transform:uppercase;letter-spacing:.5px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:14px}
+  .req{background:var(--card);border:1px solid var(--border);border-left:5px solid var(--muted);border-radius:12px;padding:14px 16px}
+  .req.g{border-left-color:var(--green)} .req.y{border-left-color:var(--yellow)} .req.r{border-left-color:var(--red)}
+  .req .top{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .req .cliente{font-weight:600;font-size:1rem}
+  .req .proj{color:var(--muted);font-size:.85rem;margin-top:2px}
+  .req .timer{font-weight:700;font-size:1.05rem;white-space:nowrap}
+  .req.g .timer{color:var(--green)} .req.y .timer{color:var(--yellow)} .req.r .timer{color:var(--red)}
+  .meta{display:flex;justify-content:space-between;color:var(--muted);font-size:.78rem;margin-top:10px}
+  .bar{height:6px;background:var(--card2);border-radius:4px;margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;border-radius:4px}
+  .req.g .bar i{background:var(--green)} .req.y .bar i{background:var(--yellow)} .req.r .bar i{background:var(--red)}
+  .chip{font-size:.72rem;padding:3px 9px;border-radius:12px;background:var(--card2);border:1px solid var(--border);color:var(--muted)}
+  table{width:100%;border-collapse:collapse;background:var(--card);border:1px solid var(--border);border-radius:12px;overflow:hidden;font-size:.85rem}
+  th,td{padding:10px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  th{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.5px;background:var(--card2)}
+  tr:last-child td{border-bottom:none}
+  .ok{color:var(--green);font-weight:600} .fail{color:var(--red);font-weight:600}
+  .empty{color:var(--muted);padding:20px;text-align:center;background:var(--card);border:1px dashed var(--border);border-radius:12px}
+  .chartbox{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:18px}
+  .chart{display:flex;align-items:flex-end;gap:14px;height:190px;overflow-x:auto}
+  .cbar{flex:1;min-width:52px;display:flex;flex-direction:column;justify-content:flex-end;align-items:center;height:100%}
+  .cbar .tot{font-size:.85rem;font-weight:700;margin-bottom:4px}
+  .cbar .stack{width:70%;max-width:60px;display:flex;flex-direction:column;border-radius:6px 6px 0 0;overflow:hidden}
+  .cbar .seg{width:100%}
+  .cbar .lbl{color:var(--muted);font-size:.75rem;margin-top:6px}
+  .cbar .pct{font-size:.7rem;color:var(--muted)}
+  .legend{display:flex;gap:16px;font-size:.75rem;color:var(--muted);margin-top:12px;flex-wrap:wrap}
+  .dot{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  .statline{color:var(--muted);font-size:.8rem;margin-top:10px}
+  .foot{color:var(--muted);font-size:.75rem;margin-top:26px;text-align:center}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>⏱️ Painel SLA 48h — <span>Projetos Corporativos</span></h1>
+    <div class="sub">Proxxima Telecom · atualizado em <span id="lastUpdate">—</span> · recarrega sozinho a cada 5 min</div>
+  </div>
+  <div style="display:flex;gap:10px;align-items:center">
+    <span class="badge-demo" id="demoBadge" style="display:none">DADOS DE EXEMPLO — configure a planilha</span>
+    <button class="reload" onclick="loadData()">↻ Atualizar</button>
+  </div>
+</div>
+
+<div class="kpis">
+  <div class="kpi blue"><div class="label">Em aberto</div><div class="value" id="kAbertas">–</div><div class="hint">solicitações aguardando entrega</div></div>
+  <div class="kpi yellow"><div class="label">Em risco</div><div class="value" id="kRisco">–</div><div class="hint">mais de 75% do SLA consumido</div></div>
+  <div class="kpi red"><div class="label">SLA estourado</div><div class="value" id="kEstourado">–</div><div class="hint">abertas há mais de 48h</div></div>
+  <div class="kpi green"><div class="label">SLA cumprido (30d)</div><div class="value" id="kPct">–</div><div class="hint">% das concluídas dentro de 48h</div></div>
+</div>
+
+<div class="filters">
+  <select id="fMes" onchange="render()"><option value="">Todos os meses</option></select>
+  <select id="fResp" onchange="render()"><option value="">Todos os responsáveis</option></select>
+  <select id="fStatus" onchange="render()"><option value="">Todos os status</option></select>
+</div>
+
+<div class="section-title">Comparativo mês a mês</div>
+<div class="chartbox" id="chartBox"></div>
+
+<div class="section-title">Solicitações em aberto (ordenadas por urgência)</div>
+<div class="cards" id="openCards"></div>
+
+<div class="section-title">Concluídas recentemente (últimos 30 dias)</div>
+<div id="doneTable"></div>
+
+<div class="foot">Fonte: Google Sheets · SLA: 48 horas corridas a partir do recebimento · Verde &lt;50% · Amarelo 50–75% · Vermelho &gt;75% ou estourado</div>
+
+<script>
+/* ============================================================
+   CONFIGURAÇÃO
+   Planilha alimentada pelo Apps Script (Gmail → Planilha).
+   Cabeçalhos na linha 1 da aba:
+   Recebido em | Cliente | Projeto | Responsável | Status | Concluído em | Ticket
+   Compartilhamento: qualquer pessoa com o link > Leitor
+   ============================================================ */
+const SHEET_ID   = "1IRh0LNoi_6bZBAU1E8g_tgH1u6iazmEYbQ8lax3ADpA";
+const SHEET_NAME = "Solicitacoes"; // nome da aba
+const SLA_HORAS  = 48;
+
+let rows = [];
+
+/* ---------- dados de exemplo (usados enquanto SHEET_ID vazio) ---------- */
+function demoData(){
+  const now = Date.now(), h = 3600e3;
+  const mk = (recH, cliente, proj, resp, status, doneH) => ({
+    recebido: new Date(now - recH*h), cliente, projeto: proj, resp, status,
+    concluido: doneH != null ? new Date(now - doneH*h) : null
+  });
+  return [
+    mk(3,  "Prefeitura de Mossoró",  "Link dedicado 1Gb — Secretaria de Saúde", "Ana",    "Novo",          null),
+    mk(20, "Supermercado Queiroz",   "FTTH corporativo 3 unidades",             "Carlos", "Em elaboração", null),
+    mk(39, "Hospital Regional",      "Redundância de link + Wi-Fi",             "Ana",    "Em elaboração", null),
+    mk(55, "Faculdade Alfa",         "Expansão de rede interna",                "Bruno",  "Novo",          null),
+    mk(70, "Construtora Delta",      "Internet dedicada canteiro de obras",     "Carlos", "Enviado",       34),
+    mk(90, "Rede de Farmácias Vida", "Link ponto a ponto entre lojas",          "Ana",    "Enviado",       50),
+    mk(120,"Cooperativa Agro RN",    "Cobertura FTTH sede + silos",             "Bruno",  "Enviado",       60),
+  ];
+}
+
+/* ---------- carga via gviz (JSONP) ---------- */
+function loadData(){
+  if(!SHEET_ID){
+    rows = demoData();
+    document.getElementById('demoBadge').style.display='inline-block';
+    render();
+    return;
+  }
+  const cb = 'gvizCb_' + Date.now();
+  window[cb] = resp => {
+    try{
+      rows = (resp.table.rows||[]).map(r=>{
+        const c = r.c || [];
+        const dt = v => v && v.v!=null ? gvizDate(v) : null;
+        return {
+          recebido: dt(c[0]), cliente: c[1]?.v||'', projeto: c[2]?.v||'',
+          resp: c[3]?.v||'', status: c[4]?.v||'Novo', concluido: dt(c[5])
+        };
+      }).filter(r=>r.recebido && r.cliente);
+    }catch(e){ console.error(e); }
+    render();
+    delete window[cb];
+  };
+  const s = document.createElement('script');
+  s.src = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?sheet=${encodeURIComponent(SHEET_NAME)}&tqx=responseHandler:${cb}`;
+  s.onerror = () => { rows = []; render(); };
+  document.body.appendChild(s);
+}
+function gvizDate(cell){
+  if(cell.v instanceof Date) return cell.v;
+  const m = String(cell.v).match(/Date\((\d+),(\d+),(\d+)(?:,(\d+),(\d+),(\d+))?\)/);
+  if(m) return new Date(+m[1], +m[2], +m[3], +(m[4]||0), +(m[5]||0), +(m[6]||0));
+  const d = new Date(cell.f || cell.v);
+  return isNaN(d) ? null : d;
+}
+
+/* ---------- render ---------- */
+const MESES = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+const mesKey = d => d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');
+const mesLabel = k => MESES[+k.split('-')[1]-1]+'/'+k.split('-')[0].slice(2);
+
+function render(){
+  const now = Date.now(), slaMs = SLA_HORAS*3600e3;
+  const fR = document.getElementById('fResp').value;
+  const fS = document.getElementById('fStatus').value;
+  const fM = document.getElementById('fMes').value;
+
+  fillFilter('fResp', [...new Set(rows.map(r=>r.resp).filter(Boolean))], fR, 'Todos os responsáveis');
+  fillFilter('fStatus', [...new Set(rows.map(r=>r.status).filter(Boolean))], fS, 'Todos os status');
+  fillMeses(fM);
+
+  const isDone = r => !!r.concluido || /envia|conclu/i.test(r.status);
+  const open = rows.filter(r=>!isDone(r));
+  const done30 = rows.filter(r=>isDone(r) && r.concluido && (now - r.concluido) <= 30*864e5);
+  const doneAll = rows.filter(r=>isDone(r) && r.concluido);
+  const baseChart = rows.filter(r => (!fR||r.resp===fR) && (!fS||r.status===fS));
+  renderChart(baseChart, isDone, slaMs, fM);
+
+  // KPIs (sem filtro)
+  const risco = open.filter(r => (now-r.recebido) > .75*slaMs && (now-r.recebido) <= slaMs).length;
+  const estourado = open.filter(r => (now-r.recebido) > slaMs).length;
+  const okCount = done30.filter(r => (r.concluido - r.recebido) <= slaMs).length;
+  setTxt('kAbertas', open.length);
+  setTxt('kRisco', risco);
+  setTxt('kEstourado', estourado);
+  setTxt('kPct', done30.length ? Math.round(okCount/done30.length*100)+'%' : '—');
+
+  // cards abertas (com filtro)
+  const flt = r => (!fR||r.resp===fR) && (!fS||r.status===fS) && (!fM||mesKey(r.recebido)===fM);
+  const openF = open.filter(flt).sort((a,b)=>a.recebido-b.recebido);
+  const cont = document.getElementById('openCards');
+  cont.innerHTML = openF.length ? openF.map(r=>{
+    const usado = now - r.recebido, pct = Math.min(usado/slaMs,1);
+    const cls = usado>slaMs?'r':(pct>.75?'r':(pct>=.5?'y':'g'));
+    const rest = slaMs - usado;
+    const timer = rest>0 ? 'restam '+fmtDur(rest) : 'estourado há '+fmtDur(-rest);
+    return `<div class="req ${cls}">
+      <div class="top"><div><div class="cliente">${esc(r.cliente)}</div><div class="proj">${esc(r.projeto)}</div></div>
+      <div class="timer">${timer}</div></div>
+      <div class="bar"><i style="width:${(pct*100).toFixed(1)}%"></i></div>
+      <div class="meta"><span>👤 ${esc(r.resp)||'—'} · <span class="chip">${esc(r.status)}</span></span>
+      <span>recebido ${fmtDT(r.recebido)}</span></div>
+    </div>`;
+  }).join('') : '<div class="empty">Nenhuma solicitação em aberto 🎉</div>';
+
+  // tabela concluídas (mês selecionado = todas do mês; senão últimos 30 dias)
+  const doneF = (fM ? doneAll : done30).filter(flt).sort((a,b)=>b.concluido-a.concluido);
+  document.getElementById('doneTable').innerHTML = doneF.length ? `<table>
+    <tr><th>Cliente</th><th>Projeto</th><th>Responsável</th><th>Recebido</th><th>Concluído</th><th>Tempo</th><th>SLA</th></tr>
+    ${doneF.map(r=>{
+      const dur = r.concluido - r.recebido, ok = dur<=slaMs;
+      return `<tr><td>${esc(r.cliente)}</td><td>${esc(r.projeto)}</td><td>${esc(r.resp)}</td>
+      <td>${fmtDT(r.recebido)}</td><td>${fmtDT(r.concluido)}</td><td>${fmtDur(dur)}</td>
+      <td class="${ok?'ok':'fail'}">${ok?'✔ no prazo':'✘ estourou'}</td></tr>`;
+    }).join('')}</table>` : '<div class="empty">Nenhuma conclusão nos últimos 30 dias</div>';
+
+  setTxt('lastUpdate', new Date().toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}));
+}
+
+/* ---------- gráfico comparativo mês a mês ---------- */
+function renderChart(base, isDone, slaMs, fM){
+  const box = document.getElementById('chartBox');
+  if(!base.length){ box.innerHTML = '<div class="empty">Sem dados</div>'; return; }
+
+  const byMes = {};
+  base.forEach(r=>{
+    const k = mesKey(r.recebido);
+    const b = byMes[k] || (byMes[k] = {tot:0, ok:0, fora:0, abertas:0});
+    b.tot++;
+    if(isDone(r)){
+      if(r.concluido && (r.concluido - r.recebido) > slaMs) b.fora++; else b.ok++;
+    } else b.abertas++;
+  });
+
+  const keys = Object.keys(byMes).sort();
+  const max = Math.max(...keys.map(k=>byMes[k].tot), 1);
+  const H = 140;
+  const h = v => Math.max(Math.round(v/max*H), v>0?3:0);
+
+  const barras = keys.map(k=>{
+    const b = byMes[k];
+    const fechadas = b.ok + b.fora;
+    const pct = fechadas ? Math.round(b.ok/fechadas*100)+'% SLA' : '—';
+    const dim = fM && k !== fM ? ';opacity:.3' : '';
+    return `<div class="cbar" style="cursor:pointer${dim}" onclick="toggleMes('${k}')"><div class="tot">${b.tot}</div>
+      <div class="stack">
+        <div class="seg" style="height:${h(b.abertas)}px;background:var(--blue)"></div>
+        <div class="seg" style="height:${h(b.fora)}px;background:var(--red)"></div>
+        <div class="seg" style="height:${h(b.ok)}px;background:var(--green)"></div>
+      </div>
+      <div class="lbl">${mesLabel(k)}</div><div class="pct">${pct}</div></div>`;
+  }).join('');
+
+  // médias do período (do mês selecionado, se houver)
+  const sel = fM && byMes[fM] ? byMes[fM] : null;
+  const datas = base.map(r=>+r.recebido);
+  const semanas = Math.max((Math.max(...datas)-Math.min(...datas))/(7*864e5), 1);
+  const stat = sel
+    ? `${mesLabel(fM)}: <b>${sel.tot}</b> solicitações · <b>${sel.ok}</b> no prazo · <b>${sel.fora}</b> fora · <b>${sel.abertas}</b> em aberto · ~<b>${(sel.tot/4.35).toFixed(1)}/semana</b>`
+    : `Total no período: <b>${base.length}</b> solicitações · média <b>${(base.length/keys.length).toFixed(1)}/mês</b> · <b>${(base.length/semanas).toFixed(1)}/semana</b>`;
+
+  box.innerHTML = `<div class="chart">${barras}</div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--green)"></span>Entregues no prazo</span>
+      <span><span class="dot" style="background:var(--red)"></span>Entregues fora do prazo</span>
+      <span><span class="dot" style="background:var(--blue)"></span>Em aberto</span>
+    </div>
+    <div class="statline">${stat}</div>`;
+}
+
+function toggleMes(k){
+  const el = document.getElementById('fMes');
+  el.value = el.value === k ? '' : k;
+  render();
+}
+
+function fillMeses(cur){
+  const el = document.getElementById('fMes');
+  const keys = [...new Set(rows.map(r=>mesKey(r.recebido)))].sort().reverse();
+  el.innerHTML = '<option value="">Todos os meses</option>' +
+    keys.map(k=>`<option value="${k}"${k===cur?' selected':''}>${mesLabel(k)}</option>`).join('');
+}
+
+/* ---------- helpers ---------- */
+function fillFilter(id, vals, cur, label){
+  const el = document.getElementById(id);
+  el.innerHTML = `<option value="">${label}</option>` + vals.sort().map(v=>`<option${v===cur?' selected':''}>${esc(v)}</option>`).join('');
+}
+function fmtDur(ms){
+  const h = Math.floor(ms/3600e3), m = Math.floor(ms%3600e3/60e3);
+  return h>0 ? `${h}h ${String(m).padStart(2,'0')}min` : `${m}min`;
+}
+function fmtDT(d){ return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
+function setTxt(id,v){ document.getElementById(id).textContent = v; }
+function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+loadData();
+setInterval(loadData, 5*60e3);   // recarrega dados a cada 5 min
+setInterval(render, 60e3);       // atualiza contadores a cada 1 min
+</script>
+</body>
+</html>
