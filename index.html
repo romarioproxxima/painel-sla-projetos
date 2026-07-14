@@ -298,7 +298,8 @@ function fillFilter(id, vals, cur, label){
   el.innerHTML = `<option value="">${label}</option>` + vals.sort().map(v=>`<option${v===cur?' selected':''}>${esc(v)}</option>`).join('');
 }
 function fmtDur(ms){
-  const h = Math.floor(ms/3600e3), m = Math.floor(ms%3600e3/60e3);
+  const d = Math.floor(ms/864e5), h = Math.floor(ms%864e5/3600e3), m = Math.floor(ms%3600e3/60e3);
+  if(d>0) return `${d}d ${h}h`;
   return h>0 ? `${h}h ${String(m).padStart(2,'0')}min` : `${m}min`;
 }
 function fmtDT(d){ return d.toLocaleString('pt-BR',{day:'2-digit',month:'2-digit',hour:'2-digit',minute:'2-digit'}); }
@@ -307,7 +308,4 @@ function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&
 
 loadData();
 setInterval(loadData, 5*60e3);   // recarrega dados a cada 5 min
-setInterval(render, 60e3);       // atualiza contadores a cada 1 min
-</script>
-</body>
-</html>
+setInterval(render, 60e3);     
