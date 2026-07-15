@@ -98,15 +98,8 @@
 <div class="foot">Fonte: Google Sheets · SLA: 48 horas corridas a partir do recebimento · Verde &lt;50% · Amarelo 50–75% · Vermelho &gt;75% ou estourado</div>
 
 <script>
-/* ============================================================
-   CONFIGURAÇÃO
-   Planilha alimentada pelo Apps Script (Gmail → Planilha).
-   Cabeçalhos na linha 1 da aba:
-   Recebido em | Cliente | Projeto | Responsável | Status | Concluído em | Ticket
-   Compartilhamento: qualquer pessoa com o link > Leitor
-   ============================================================ */
 const SHEET_ID   = "1IRh0LNoi_6bZBAU1E8g_tgH1u6iazmEYbQ8lax3ADpA";
-const SHEET_NAME = "Solicitacoes"; // nome da aba
+const SHEET_NAME = "Solicitacoes";
 const SLA_HORAS  = 48;
 
 let rows = [];
@@ -308,4 +301,7 @@ function esc(s){ return String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&
 
 loadData();
 setInterval(loadData, 5*60e3);   // recarrega dados a cada 5 min
-setInterval(render, 60e3);     
+setInterval(render, 60e3);       // atualiza contadores a cada 1 min
+</script>
+</body>
+</html>
